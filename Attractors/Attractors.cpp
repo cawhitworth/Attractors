@@ -8,6 +8,9 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <random>
+#include <functional>
+#include <ctime>
 
 #define decimal double
 
@@ -33,31 +36,51 @@ Coord iterate(Coord p, decimal a, decimal b, decimal c, decimal d)
     return out;
 }
 
+
 int main()
 {
-    auto w = 640;
-    auto h = 512;
+    std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
+    std::default_random_engine re {};
 
-    Bitmap bmp(w, h);
+    re.seed(time(nullptr));
 
-    Coord p(0.0, 0.0);
+    auto randomCoefficient{ bind(distribution, re) };
 
-    decimal A = -1.4, B = 1.6, C = 1.0, D = 0.7;
+    unsigned int w { 640 }, h { 512 };
 
-    decimal minX = 0.0, minY = 0.0, maxX = 0.0, maxY = 0.0;
+    Bitmap bmp {w,h};
 
-    for (auto i = 0; i < 10000; i++)
-    {
-        p = iterate(p, A, B, C, D);
+    Coord p {};
 
-        minX = std::min(p.x, minX);
-        minY = std::min(p.y, minY);
+    decimal A, B, C, D;
+    decimal minX,  minY, maxX, maxY;
 
-        maxX = std::max(p.x, maxX);
-        maxY = std::max(p.y, maxY);
-    }
+    do {
+        A = static_cast<decimal>(randomCoefficient());
+        B = static_cast<decimal>(randomCoefficient());
+        C = static_cast<decimal>(randomCoefficient());
+        D = static_cast<decimal>(randomCoefficient());
 
-    p = Coord();
+        minX = minY = maxX = maxY = 0.0;
+
+        p = Coord {};
+
+        for (auto i = 0; i < 10000; i++)
+        {
+            p = iterate(p, A, B, C, D);
+
+            minX = std::min(p.x, minX);
+            minY = std::min(p.y, minY);
+
+            maxX = std::max(p.x, maxX);
+            maxY = std::max(p.y, maxY);
+        }
+    } while (minX == 0.0 || minY == 0.0 || maxX == 0.0 || maxY == 0.0);
+    
+    std::cout << "(" << A << "," << B << "," << C << "," <<D << ")" << std::endl;
+    std::cout << "(" << minX << "," << minY << ") (" << maxX << "," << maxY << ")" << std::endl;
+
+    p = Coord {};
 
     decimal xScale = (w-1) / (maxX - minX);
     decimal yScale = (h-1) / (maxY - minY);
@@ -79,7 +102,6 @@ int main()
 
     }
 
-    std::cout << "(" << minX << "," << minY << "," << ") (" << maxX << "," << maxY << ")" << std::endl;
 
     auto err = lodepng::encode("output.png", bmp.RawData(), w, h);
     return 0;
