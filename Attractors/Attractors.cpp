@@ -46,7 +46,7 @@ int main()
 
     auto randomCoefficient{ bind(distribution, re) };
 
-    unsigned int w { 640 }, h { 512 };
+    unsigned int w { 1920 }, h { 1080 }, iterations { 100 * 1000 * 1000 };
 
     Bitmap bmp {w,h};
 
@@ -85,7 +85,7 @@ int main()
     decimal xScale = (w-1) / (maxX - minX);
     decimal yScale = (h-1) / (maxY - minY);
 
-    for (auto i = 0; i < 10000000; i++)
+    for (auto i = 0; i < iterations ; i++)
     {
         p = iterate(p, A, B, C, D);
 
