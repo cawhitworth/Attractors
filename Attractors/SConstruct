@@ -1,0 +1,12 @@
+
+env = Environment(CXXFLAGS=["-std=c++11","-O2"])
+
+env["CXX"] = "clang++"
+
+env.Append(LINKFLAGS= [ ])
+
+env.Program("attractors", [
+                       "Attractors.cpp",
+                       "Bitmap.cpp",
+                       "lodepng.cpp"
+                        ] )

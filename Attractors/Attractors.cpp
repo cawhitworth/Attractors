@@ -44,7 +44,7 @@ int main()
 
     re.seed(time(nullptr));
 
-    auto randomCoefficient{ bind(distribution, re) };
+    auto randomCoefficient(bind(distribution, re));
 
     unsigned int w { 1920 }, h { 1080 }, iterations { 100 * 1000 * 1000 };
 
