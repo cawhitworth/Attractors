@@ -6,3 +6,7 @@ Release/
 *.filters
 *.user
 *.opendb
+*.o
+output.png
+*.dblite
+tags
