@@ -145,12 +145,15 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bitmap.h" />
+    <ClInclude Include="Colour.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Attractors.cpp" />
+    <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
