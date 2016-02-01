@@ -42,13 +42,13 @@ int main()
 
     Coord p(0.0, 0.0);
 
-    decimal a = -1.4, b = 1.6, c = 1.0, d = 0.7;
+    decimal A = -1.4, B = 1.6, C = 1.0, D = 0.7;
 
     decimal minX = 0.0, minY = 0.0, maxX = 0.0, maxY = 0.0;
 
     for (auto i = 0; i < 10000; i++)
     {
-        p = iterate(p, a, b, c, d);
+        p = iterate(p, A, B, C, D);
 
         minX = std::min(p.x, minX);
         minY = std::min(p.y, minY);
@@ -59,14 +59,23 @@ int main()
 
     p = Coord();
 
-    for (auto i = 0; i < 1000000; i++)
+    decimal xScale = (w-1) / (maxX - minX);
+    decimal yScale = (h-1) / (maxY - minY);
+
+    for (auto i = 0; i < 10000000; i++)
     {
-        p = iterate(p, a, b, c, d);
+        p = iterate(p, A, B, C, D);
 
-        auto plotX = (p.x - minX) * (w / (maxX - minX));
-        auto plotY = (p.y - minY) * (h / (maxY - minY));
+        auto plotX = (p.x - minX) * xScale;
+        auto plotY = (p.y - minY) * yScale;
 
-        bmp.Plot(plotX, plotY, 0xffffffff);
+        auto c = bmp.Point(plotX, plotY);
+        auto r = R(c), g = G(c), b = B(c);
+        if (r < 0xfe) r += 2;
+        if (g < 0xff) g++;
+        if (b < 0xff) b++;
+
+        bmp.Plot(plotX, plotY, Colour(r,g,b));
 
     }
 
