@@ -7,6 +7,10 @@ Jong attractors) in C++. Should build on Windows (Visual Studio), OS X and
 Linux (clang++, SCons). Uses a (very slightly) modified
 [lodepng](https://github.com/lvandeve/lodepng) for writing out images.
 
+As well as rendering the images using custom gradient palettes and configurable
+gamma and exposure, the code attempts to find aesthetically interesting sets of
+coefficients automatically.
+
 Initial inspiration came from [this](http://paulbourke.net/fractals/clifford/)
 popping up on Hacker News.
 
