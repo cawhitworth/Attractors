@@ -34,7 +34,7 @@ Rect find_bounds(std::function<Coord(Coord)> iter, unsigned iterations = 10000)
     Rect bounds;
     Coord p {};
 
-    for (auto i = 0; i < iterations; i++)
+    for (auto i = 0U; i < iterations; i++)
     {
         p = iter(p);
 
@@ -82,7 +82,7 @@ Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
     return bmp;
 }
 
-Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, Gradient grad)
+Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, decimal gamma, Gradient grad)
 {
     auto bmp { bitmap.Copy() };
 
@@ -90,7 +90,11 @@ Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, Gradient grad)
 
     for(auto& px : bmp)
     {
-        auto pct = std::min(1.0, static_cast<decimal>(px) / static_cast<decimal>(maxExposure));
+        auto pct = static_cast<decimal>(px) / static_cast<decimal>(maxExposure);
+
+        pct = pow(pct, 1.0 / gamma);
+
+        pct = std::min(1.0, pct);
 
         px = grad.ColourAt(pct);
     }
@@ -155,12 +159,12 @@ int main()
 
     grad.points = {
         GradientPoint { 0.0, Colour(0,0,0) },
-        GradientPoint { 0.1 , Colour(255, 0, 0) },
-        GradientPoint { 0.2 , Colour(255, 255, 0) },
+        GradientPoint { 0.3 , Colour(255, 0, 0) },
+        GradientPoint { 0.6 , Colour(255, 255, 0) },
         GradientPoint { 1.0, Colour(255, 255, 255) }
     };
 
-    auto bmp = develop(exposed, maxExposure * 0.5, grad);
+    auto bmp = develop(exposed, maxExposure * 0.8, 1.5, grad);
 
     std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
     std::cout << "Exposure comp: " << maxExposure << std::endl;
