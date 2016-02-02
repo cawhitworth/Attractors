@@ -100,7 +100,7 @@ Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, Gradient grad)
 
 std::function<Coord(Coord)> find_interesting_coeffs(Rect& bounds)
 {
-    std::uniform_real_distribution<decimal> distribution { -5.0, 5.0 };
+    std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
     std::default_random_engine re {};
 
     re.seed(static_cast<unsigned int>(time(nullptr)));
