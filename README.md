@@ -1,8 +1,8 @@
 # Attractors
 
-Drawing attractor functions (specifically, the Pickover, or Clifford,
-Attractor) in C++. Should build on Windows (Visual Studio), OS X and Linux
-(clang++, SCons). Uses a (very slightly) modified
+Drawing attractor functions (at the moment, Pickover, or Clifford, and Peter de
+Jong attractors) in C++. Should build on Windows (Visual Studio), OS X and
+Linux (clang++, SCons). Uses a (very slightly) modified
 [lodepng](https://github.com/lvandeve/lodepng) for writing out images.
 
 Initial inspiration came from [this](http://paulbourke.net/fractals/clifford/)
@@ -10,10 +10,10 @@ popping up on Hacker News.
 
 ## Attractor functions?
 
-Iterative functions that tend towards a particular set. Sometimes this is a
-single value, or a cycle of a handful of values. Sometimes, it's a large
-set of values that when plotted, draw a pretty pattern. This project tries
-to find and draw the latter.
+Iterative or derivative functions that tend towards a particular set. Sometimes
+this is a single value, or a cycle of a handful of values. Sometimes, it's a
+large set of values that when plotted, draw a pretty pattern. This project
+tries to find and draw the latter.
 
 ## Finding interesting patterns
 

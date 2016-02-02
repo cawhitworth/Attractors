@@ -28,6 +28,15 @@ Coord clifford_attractor(Coord p, Coefficients coeffs)
     return out;
 }
 
+Coord peter_de_jong_attractor(Coord p, Coefficients coeffs)
+{
+    Coord out;
+    out.x = std::sin(coeffs.a * p.y) - std::cos(coeffs.b * p.x);
+    out.y = std::sin(coeffs.c * p.x) - std::cos(coeffs.d * p.y);
+
+    return out;
+}
+
 Rect find_bounds(std::function<Coord(Coord)> iter, unsigned iterations = 10000)
 {
     Rect bounds;
@@ -157,16 +166,7 @@ int main()
     auto maxExposure{ 0U };
     auto exposed = expose(w, h, iterations, bounds, function, maxExposure, true);
 
-    auto grad = Gradient {};
-
-    grad.points = {
-        GradientPoint { 0.0, Colour(0,0,0) },
-        GradientPoint { 0.3 , Colour(255, 0, 0) },
-        GradientPoint { 0.6 , Colour(255, 255, 0) },
-        GradientPoint { 1.0, Colour(255, 255, 255) }
-    };
-
-    auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, grad);
+    auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, WhiteOrange);
 
     std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
     std::cout << "Exposure comp: " << maxExposure << std::endl;

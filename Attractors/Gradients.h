@@ -13,7 +13,7 @@ typedef struct GradientPoint {
     GradientPoint(decimal p, unsigned c) : p(p), c(c) {}
 } GradientPoint;
 
-typedef struct
+typedef struct Gradient
 {
     std::vector<GradientPoint> points;
 
@@ -34,4 +34,22 @@ typedef struct
         }
         return points[points.size() - 1].c;
     }
+
+    Gradient(std::vector<GradientPoint> points) : points(points) {}
 } Gradient;
+
+Gradient Hot{ {
+        GradientPoint { 0.0, Colour(0,0,0) },
+        GradientPoint { 0.3 , Colour(255, 0, 0) },
+        GradientPoint { 0.6 , Colour(255, 255, 0) },
+        GradientPoint { 1.0, Colour(255, 255, 255) }
+    }
+};
+
+Gradient WhiteOrange{ {
+        GradientPoint { 0.0, Colour(255, 255, 255) },
+        GradientPoint { 0.5, Colour(255, 127, 0) },
+        GradientPoint { 0.9, Colour(127, 64, 0) },
+        GradientPoint { 1.0, Colour(0,0,0) }
+    }
+};
