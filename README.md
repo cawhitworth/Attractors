@@ -1,5 +1,7 @@
 # Attractors
 
+![Small example](https://raw.githubusercontent.com/cawhitworth/Attractors/master/examples/small_example.png)
+
 Drawing attractor functions (at the moment, Pickover, or Clifford, and Peter de
 Jong attractors) in C++. Should build on Windows (Visual Studio), OS X and
 Linux (clang++, SCons). Uses a (very slightly) modified
