@@ -15,9 +15,29 @@ Bitmap::Bitmap(unsigned width, unsigned height)
     }
 }
 
+Bitmap::Bitmap(Bitmap&& bitmap)
+    : m_width(bitmap.m_width)
+    , m_height(bitmap.m_height)
+    , m_pixels(bitmap.m_pixels)
+{
+    bitmap.m_pixels = nullptr;
+    bitmap.m_width = bitmap.m_height = 0;
+}
+
+Bitmap& Bitmap::operator=(Bitmap&& bitmap)
+{
+    m_height = bitmap.m_height;
+    m_width = bitmap.m_width;
+    m_pixels = bitmap.m_pixels;
+    bitmap.m_pixels = nullptr;
+    bitmap.m_width = bitmap.m_height = 0;
+    return *this;
+}
+
 Bitmap::~Bitmap()
 {
-    delete [] m_pixels;
+    if (m_pixels != nullptr)
+        delete [] m_pixels;
 }
 
 const unsigned char* Bitmap::RawData() const

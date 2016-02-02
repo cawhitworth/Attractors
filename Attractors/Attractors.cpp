@@ -52,18 +52,44 @@ Rect find_bounds(std::function<Coord(Coord, Coefficients)> iter, Coefficients co
     return bounds;
 }
 
+Bitmap Expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::function<Coord(Coord)> iterate_function)
+{
+    Bitmap bmp {w,h};
+    Coord p {};
+
+    auto xScale = (w-1) / bounds.width();
+    auto yScale = (h-1) / bounds.height();
+
+    auto maxExposure = 0U;
+
+    for (auto i = 0U; i < iterations ; i++)
+    {
+        p = iterate_function(p);
+
+        auto plotX = static_cast<unsigned int>(fmax(0, floor((p.x - bounds.bl.x) * xScale)));
+        auto plotY = static_cast<unsigned int>(fmax(0, floor((p.y - bounds.bl.y) * yScale)));
+
+        auto c = bmp.Point(plotX, plotY) + 1;
+
+        if (c > maxExposure) maxExposure = c;
+        bmp.Plot(plotX, plotY, c);
+    }
+
+    return bmp;
+}
+
 int main()
 {
+    using namespace std::placeholders;
     std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
     std::default_random_engine re {};
 
-    re.seed(time(nullptr));
+    re.seed(static_cast<unsigned int>(time(nullptr)));
 
     auto randomCoefficient(bind(distribution, re));
 
-    unsigned int w { 640 }, h { 512 }, iterations { 10 * 1000 * 1000 };
+    auto w { 640U }, h { 512U }, iterations { 10U * 1000 * 1000 };
 
-    Bitmap bmp {w,h};
 
     Coord p {};
 
@@ -83,27 +109,8 @@ int main()
     std::cout << "(" << coeffs.a << "," << coeffs.b << "," << coeffs.c << "," <<coeffs.d << ")" << std::endl;
     std::cout << "(" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
 
-    p = Coord {};
-
-    decimal xScale = (w-1) / bounds.width();
-    decimal yScale = (h-1) / bounds.height();
-
-    for (auto i = 0; i < iterations ; i++)
-    {
-        p = iterate(p, coeffs);
-
-        auto plotX = fmax(0, floor((p.x - bounds.bl.x) * xScale));
-        auto plotY = fmax(0, floor((p.y - bounds.bl.y) * yScale));
-
-        auto c = bmp.Point(plotX, plotY);
-        unsigned char r = R(c), g = G(c), b = B(c);
-        if (r < 0xfe) r += 2;
-        if (g < 0xff) g++;
-        if (b < 0xff) b++;
-
-        bmp.Plot(plotX, plotY, Colour(r,g,b));
-
-    }
+    auto fn = bind(iterate, _1, coeffs);
+    auto bmp = Expose(w, h, iterations, bounds, fn);
 
     auto err = lodepng::encode("output.png", bmp.RawData(), w, h);
     return 0;

@@ -8,13 +8,18 @@ public:
     Bitmap(unsigned width, unsigned height);
     ~Bitmap();
 
+    Bitmap(const Bitmap&) = delete;
+    Bitmap(Bitmap&&);
 
-    inline void Plot(unsigned x, unsigned y, unsigned color)
+    Bitmap& operator=(const Bitmap&) = delete;
+    Bitmap& operator=(Bitmap &&);
+
+    inline void Plot(unsigned x, unsigned y, unsigned color) const
     {
         m_pixels[x + y * m_width] = color;
     }
 
-    inline const unsigned Point(unsigned x, unsigned y) const
+    inline unsigned Point(unsigned x, unsigned y) const
     {
         return m_pixels[x + y * m_width];
     }
