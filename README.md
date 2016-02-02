@@ -77,8 +77,16 @@ Studio 2015.
 
 # Examples
 
-## A = -1.52331, B = 1.28192, C = 1.45112, D = -0.975345
+## Clifford, A = -1.52331, B = 1.28192, C = 1.45112, D = -0.975345
 
-Rendered at 1920x1080, 500 million iterations, gamma 1.5, exposure clamp 0.8.
+Rendered at 1920x1080, 500m iterations, gamma 1.5, exposure clamp 0.8,
+Hot palette.
 
 ![Example 1](https://raw.githubusercontent.com/cawhitworth/Attractors/master/examples/example_1.png)
+
+## Peter de Jong, A = -1.99727, B = -1.60524, C = 1.72766, D = -1.88512)
+
+Rendered at 1920x1080, 500m iterations, gamma 1.5, exposure clamp 0.8,
+WhiteOrange palette.
+
+![Example 2](https://raw.githubusercontent.com/cawhitworth/Attractors/master/examples/example_2.png)
