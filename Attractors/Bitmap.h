@@ -1,20 +1,23 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 class Bitmap
 {
 public:
     Bitmap(unsigned width, unsigned height);
-    ~Bitmap();
+    Bitmap(unsigned width, unsigned height, unsigned colour);
 
     Bitmap(const Bitmap&) = delete;
-    Bitmap(Bitmap&&);
+    Bitmap(Bitmap&&) = default;
 
     Bitmap& operator=(const Bitmap&) = delete;
-    Bitmap& operator=(Bitmap &&);
+    Bitmap& operator=(Bitmap &&) = default;
 
-    inline void Plot(unsigned x, unsigned y, unsigned color) const
+    Bitmap Copy() const;
+
+    inline void Plot(unsigned x, unsigned y, unsigned color)
     {
         m_pixels[x + y * m_width] = color;
     }
@@ -26,8 +29,17 @@ public:
 
     const unsigned char* RawData() const;
 
+    std::vector<unsigned>::const_iterator begin() const { return m_pixels.begin(); }
+    std::vector<unsigned>::const_iterator end() const { return m_pixels.end(); }
+
+    std::vector<unsigned>::iterator begin()  { return m_pixels.begin(); }
+    std::vector<unsigned>::iterator end() { return m_pixels.end(); }
+
+    unsigned Height() const { return m_height; }
+    unsigned Width() const { return m_width; }
+
 private:
-    unsigned* m_pixels;
+    std::vector<unsigned> m_pixels;
     unsigned m_width;
     unsigned m_height;
 };

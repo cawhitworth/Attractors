@@ -1,46 +1,33 @@
 #include "stdafx.h"
 #include "Bitmap.h"
+#include "Colour.h"
 
-Bitmap::Bitmap(unsigned width, unsigned height)
+Bitmap::Bitmap(unsigned width, unsigned height) : Bitmap(width, height, Colour(0,0,0))
 {
-    m_width = width; m_height = height;
+}
 
-    m_pixels = new unsigned [width * height];
-    for (int x = 0; x < width; x++)
+Bitmap::Bitmap(unsigned width, unsigned height, unsigned colour)
+    : m_width(width)
+    , m_height(height)
+{
+    m_pixels.resize(width * height);
+    for (auto x = 0U; x < width; x++)
     {
-        for (int y = 0; y < height; y++)
+        for (auto y = 0U; y < height; y++)
         {
-            Plot(x, y, 0xff000000);
+            Plot(x, y, colour);
         }
     }
 }
 
-Bitmap::Bitmap(Bitmap&& bitmap)
-    : m_width(bitmap.m_width)
-    , m_height(bitmap.m_height)
-    , m_pixels(bitmap.m_pixels)
+Bitmap Bitmap::Copy() const
 {
-    bitmap.m_pixels = nullptr;
-    bitmap.m_width = bitmap.m_height = 0;
-}
-
-Bitmap& Bitmap::operator=(Bitmap&& bitmap)
-{
-    m_height = bitmap.m_height;
-    m_width = bitmap.m_width;
-    m_pixels = bitmap.m_pixels;
-    bitmap.m_pixels = nullptr;
-    bitmap.m_width = bitmap.m_height = 0;
-    return *this;
-}
-
-Bitmap::~Bitmap()
-{
-    if (m_pixels != nullptr)
-        delete [] m_pixels;
+    Bitmap bmp{ m_width, m_height };
+    std::copy(begin(), end(), bmp.begin());
+    return bmp;
 }
 
 const unsigned char* Bitmap::RawData() const
 {
-    return reinterpret_cast<unsigned char*>(m_pixels);
+    return reinterpret_cast<unsigned const char*>(&m_pixels[0]);
 }

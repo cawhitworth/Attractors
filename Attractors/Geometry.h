@@ -1,5 +1,7 @@
 #pragma once 
 
+#include "Decimal.h"
+
 template<typename T>
 struct _Coord
 {
@@ -16,7 +18,10 @@ struct _Rect
     _Coord<T> bl;
     _Coord<T> tr;
 
-    const T width() const { return tr.x - bl.x; }
-    const T height() const { return tr.y - bl.y; }
+    T width() const { return tr.x - bl.x; }
+    T height() const { return tr.y - bl.y; }
 };
 
+
+typedef _Coord<decimal> Coord;
+typedef _Rect<decimal> Rect;

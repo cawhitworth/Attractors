@@ -23,6 +23,16 @@
         ( 0xff << 24)\
     ))
 
+template<typename T>
+inline unsigned Lerp(unsigned c1, unsigned c2, T amount)
+{
+    return Colour(
+        static_cast<unsigned>(R(c1) + (R(c2) - R(c1)) * amount),
+        static_cast<unsigned>(G(c1) + (G(c2) - G(c1)) * amount),
+        static_cast<unsigned>(B(c1) + (B(c2) - B(c1)) * amount)
+        );
+}
+
 inline unsigned Distance(unsigned c1, unsigned c2)
 {
     int r = R(c1) - R(c2);

@@ -13,11 +13,7 @@
 #include "Bitmap.h"
 #include "lodepng.h"
 #include "Colour.h"
-
-#define decimal double
-
-typedef _Coord<decimal> Coord;
-typedef _Rect<decimal> Rect;
+#include "Gradients.h"
 
 typedef struct {
     decimal a, b, c, d;
@@ -33,14 +29,14 @@ Coord iterate(Coord p, Coefficients coeffs)
     return out;
 }
 
-Rect find_bounds(std::function<Coord(Coord, Coefficients)> iter, Coefficients coeffs)
+Rect find_bounds(std::function<Coord(Coord)> iter, unsigned iterations = 10000)
 {
     Rect bounds;
     Coord p {};
 
-    for (auto i = 0; i < 10000; i++)
+    for (auto i = 0; i < iterations; i++)
     {
-        p = iter(p, coeffs);
+        p = iter(p);
 
         bounds.bl.x = std::min(p.x, bounds.bl.x);
         bounds.bl.y = std::min(p.y, bounds.bl.y);
@@ -52,18 +48,23 @@ Rect find_bounds(std::function<Coord(Coord, Coefficients)> iter, Coefficients co
     return bounds;
 }
 
-Bitmap Expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::function<Coord(Coord)> iterate_function)
+Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::function<Coord(Coord)> iterate_function, unsigned &maxExposure, bool log = false)
 {
-    Bitmap bmp {w,h};
+    Bitmap bmp {w,h,0};
     Coord p {};
 
-    auto xScale = (w-1) / bounds.width();
-    auto yScale = (h-1) / bounds.height();
+    auto xScale { (w - 1) / bounds.width() };
+    auto yScale { (h - 1) / bounds.height() };
 
-    auto maxExposure = 0U;
+    maxExposure = 0;
+
+    auto reset = iterations / 10;
+    
+    if (log) std::cout << "Exposing";
 
     for (auto i = 0U; i < iterations ; i++)
     {
+        if (log) { if (i % reset == 0) std::cout << "."; }
         p = iterate_function(p);
 
         auto plotX = static_cast<unsigned int>(fmax(0, floor((p.x - bounds.bl.x) * xScale)));
@@ -72,45 +73,97 @@ Bitmap Expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
         auto c = bmp.Point(plotX, plotY) + 1;
 
         if (c > maxExposure) maxExposure = c;
+
         bmp.Plot(plotX, plotY, c);
+    }
+    
+    if (log) std::cout << std::endl;
+
+    return bmp;
+}
+
+Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, Gradient grad)
+{
+    auto bmp { bitmap.Copy() };
+
+    auto x = 0, y = 0;
+
+    for(auto& px : bmp)
+    {
+        auto pct = std::min(1.0, static_cast<decimal>(px) / static_cast<decimal>(maxExposure));
+
+        px = grad.ColourAt(pct);
     }
 
     return bmp;
 }
 
-int main()
+std::function<Coord(Coord)> find_interesting_coeffs(Rect& bounds)
 {
-    using namespace std::placeholders;
-    std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
+    std::uniform_real_distribution<decimal> distribution { -5.0, 5.0 };
     std::default_random_engine re {};
 
     re.seed(static_cast<unsigned int>(time(nullptr)));
 
     auto randomCoefficient(bind(distribution, re));
-
-    auto w { 640U }, h { 512U }, iterations { 10U * 1000 * 1000 };
-
-
     Coord p {};
 
     Coefficients coeffs;
-    Rect bounds;
 
+    bool found;
     do {
+        found = true;
         coeffs.a = static_cast<decimal>(randomCoefficient());
         coeffs.b = static_cast<decimal>(randomCoefficient());
         coeffs.c = static_cast<decimal>(randomCoefficient());
         coeffs.d = static_cast<decimal>(randomCoefficient());
 
-        bounds = find_bounds( iterate, coeffs);
-    } while (bounds.bl.x == 0 || bounds.bl.y == 0 ||
-             bounds.tr.x == 0 || bounds.tr.y == 0);
-    
-    std::cout << "(" << coeffs.a << "," << coeffs.b << "," << coeffs.c << "," <<coeffs.d << ")" << std::endl;
-    std::cout << "(" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
+        auto fn = std::bind(iterate, std::placeholders::_1, coeffs);
+        bounds = find_bounds(fn);
 
-    auto fn = bind(iterate, _1, coeffs);
-    auto bmp = Expose(w, h, iterations, bounds, fn);
+        if (bounds.bl.x == 0 || bounds.bl.y == 0 ||
+            bounds.tr.x == 0 || bounds.tr.y == 0) { found = false; }
+        else {
+
+            auto maxExposure{ 0U };
+            auto exposed = expose(640, 512, 10000, bounds, fn, maxExposure);
+
+            if (maxExposure > 10) found = false;
+        }
+
+    } while (!found);
+
+    std::cout << "Coeffs (" << coeffs.a << "," << coeffs.b << "," << coeffs.c << "," <<coeffs.d << ")" << std::endl;
+
+    auto fn = std::bind(iterate, std::placeholders::_1, coeffs);
+    return fn;
+}
+
+int main()
+{
+    using namespace std::placeholders;
+
+    auto w { 640U }, h { 512U }, iterations { 100U * 1000 * 1000 };
+
+    Rect bounds;
+    auto function = find_interesting_coeffs(bounds);
+
+    auto maxExposure{ 0U };
+    auto exposed = expose(w, h, iterations, bounds, function, maxExposure, true);
+
+    auto grad = Gradient {};
+
+    grad.points = {
+        GradientPoint { 0.0, Colour(0,0,0) },
+        GradientPoint { 0.1 , Colour(255, 0, 0) },
+        GradientPoint { 0.2 , Colour(255, 255, 0) },
+        GradientPoint { 1.0, Colour(255, 255, 255) }
+    };
+
+    auto bmp = develop(exposed, maxExposure * 0.5, grad);
+
+    std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
+    std::cout << "Exposure comp: " << maxExposure << std::endl;
 
     auto err = lodepng::encode("output.png", bmp.RawData(), w, h);
     return 0;
