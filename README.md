@@ -1,8 +1,8 @@
 # Attractors
 
-Drawing some attractor functions. Should build on Windows (Visual Studio),
-OS X and Linux (clang++, SCons). Uses a (very slightly) modified lodepng for
-writing out images.
+Drawing attractor functions (specifically, the Clifford Attractor). Should
+build on Windows (Visual Studio), OS X and Linux (clang++, SCons). Uses a (very
+slightly) modified lodepng for writing out images.
 
 ## Attractor functions?
 
