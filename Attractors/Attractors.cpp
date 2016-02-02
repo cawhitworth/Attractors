@@ -19,8 +19,7 @@ typedef struct {
     decimal a, b, c, d;
 } Coefficients;
 
-// Clifford attractor
-Coord iterate(Coord p, Coefficients coeffs)
+Coord clifford_attractor(Coord p, Coefficients coeffs)
 {
     Coord out;
     out.x = std::sin(coeffs.a * p.y) + coeffs.c * std::cos(coeffs.a * p.x);
@@ -65,6 +64,7 @@ Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
     for (auto i = 0U; i < iterations ; i++)
     {
         if (log) { if (i % reset == 0) std::cout << "."; }
+
         p = iterate_function(p);
 
         auto plotX = static_cast<unsigned int>(fmax(0, floor((p.x - bounds.bl.x) * xScale)));
@@ -94,7 +94,7 @@ Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, decimal gamma, Gradie
 
         pct = pow(pct, 1.0 / gamma);
 
-        pct = std::min(1.0, pct);
+        pct = std::max(0.0, std::min(1.0, pct));
 
         px = grad.ColourAt(pct);
     }
@@ -102,8 +102,9 @@ Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, decimal gamma, Gradie
     return bmp;
 }
 
-std::function<Coord(Coord)> find_interesting_coeffs(Rect& bounds)
+std::function<Coord(Coord)> find_interesting_coeffs(std::function<Coord(Coord, Coefficients)> iterate, Rect& bounds)
 {
+    using namespace std::placeholders;
     std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
     std::default_random_engine re {};
 
@@ -122,24 +123,25 @@ std::function<Coord(Coord)> find_interesting_coeffs(Rect& bounds)
         coeffs.c = static_cast<decimal>(randomCoefficient());
         coeffs.d = static_cast<decimal>(randomCoefficient());
 
-        auto fn = std::bind(iterate, std::placeholders::_1, coeffs);
+        auto fn = std::bind(iterate, _1, coeffs);
         bounds = find_bounds(fn);
 
         if (bounds.bl.x == 0 || bounds.bl.y == 0 ||
-            bounds.tr.x == 0 || bounds.tr.y == 0) { found = false; }
-        else {
-
-            auto maxExposure{ 0U };
-            auto exposed = expose(640, 512, 10000, bounds, fn, maxExposure);
-
-            if (maxExposure > 10) found = false;
+            bounds.tr.x == 0 || bounds.tr.y == 0) {
+            found = false; 
+            continue;
         }
+
+        auto maxExposure{ 0U };
+        auto exposed = expose(640, 512, 10000, bounds, fn, maxExposure);
+
+        if (maxExposure > 10) found = false;
 
     } while (!found);
 
     std::cout << "Coeffs (" << coeffs.a << "," << coeffs.b << "," << coeffs.c << "," <<coeffs.d << ")" << std::endl;
 
-    auto fn = std::bind(iterate, std::placeholders::_1, coeffs);
+    auto fn = std::bind(iterate, _1, coeffs);
     return fn;
 }
 
@@ -150,7 +152,7 @@ int main()
     auto w { 640U }, h { 512U }, iterations { 100U * 1000 * 1000 };
 
     Rect bounds;
-    auto function = find_interesting_coeffs(bounds);
+    auto function = find_interesting_coeffs(clifford_attractor, bounds);
 
     auto maxExposure{ 0U };
     auto exposed = expose(w, h, iterations, bounds, function, maxExposure, true);
@@ -164,7 +166,7 @@ int main()
         GradientPoint { 1.0, Colour(255, 255, 255) }
     };
 
-    auto bmp = develop(exposed, maxExposure * 0.8, 1.5, grad);
+    auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, grad);
 
     std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
     std::cout << "Exposure comp: " << maxExposure << std::endl;
