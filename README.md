@@ -1,8 +1,11 @@
 # Attractors
 
-Drawing attractor functions (specifically, the Clifford Attractor). Should
-build on Windows (Visual Studio), OS X and Linux (clang++, SCons). Uses a (very
-slightly) modified lodepng for writing out images.
+Drawing attractor functions (specifically, the Pickover, or Clifford,
+Attractor). Should build on Windows (Visual Studio), OS X and Linux (clang++,
+SCons). Uses a (very slightly) modified lodepng for writing out images.
+
+Initial inspiration came from [http://paulbourke.net/fractals/clifford/](this)
+popping up on Hacker News.
 
 ## Attractor functions?
 
