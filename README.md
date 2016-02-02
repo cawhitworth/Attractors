@@ -4,7 +4,7 @@ Drawing attractor functions (specifically, the Pickover, or Clifford,
 Attractor). Should build on Windows (Visual Studio), OS X and Linux (clang++,
 SCons). Uses a (very slightly) modified lodepng for writing out images.
 
-Initial inspiration came from [http://paulbourke.net/fractals/clifford/](this)
+Initial inspiration came from [this](http://paulbourke.net/fractals/clifford/)
 popping up on Hacker News.
 
 ## Attractor functions?
