@@ -13,6 +13,8 @@ to find and draw the latter.
 
 # Examples
 
-A = -1.52331, B = 1.28192, C = 1.45112, D = -0.975345
+## A = -1.52331, B = 1.28192, C = 1.45112, D = -0.975345
+
+Rendered at 1920x1080, 500 million iterations, gamma 1.5, exposure clamp 0.8.
 
 ![Example 1](https://raw.githubusercontent.com/cawhitworth/Attractors/master/examples/example_1.png)
