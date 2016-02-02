@@ -59,10 +59,10 @@ Rect find_bounds(std::function<Coord(Coord)> iter, unsigned iterations = 10000)
 Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::function<Coord(Coord)> iterate_function, unsigned &maxExposure, bool log = false)
 {
     Bitmap bmp {w,h,0};
-    Coord p {};
+    Coord p;
 
-    auto xScale { (w - 1) / bounds.width() };
-    auto yScale { (h - 1) / bounds.height() };
+    auto xScale = (w - 1) / bounds.width();
+    auto yScale = (h - 1) / bounds.height();
 
     maxExposure = 0;
 
@@ -93,7 +93,7 @@ Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
 
 Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, decimal gamma, Gradient grad)
 {
-    auto bmp { bitmap.Copy() };
+    auto bmp = bitmap.Copy();
 
     auto x = 0, y = 0;
 
@@ -141,7 +141,7 @@ std::function<Coord(Coord)> find_interesting_coeffs(std::function<Coord(Coord, C
             continue;
         }
 
-        auto maxExposure{ 0U };
+        auto maxExposure = 0U;
         auto exposed = expose(640, 512, 10000, bounds, fn, maxExposure);
 
         if (maxExposure > 10) found = false;
@@ -158,12 +158,12 @@ int main()
 {
     using namespace std::placeholders;
 
-    auto w { 640U }, h { 512U }, iterations { 100U * 1000 * 1000 };
+    auto w = 640U, h = 512U, iterations = 100U * 1000 * 1000;
 
     Rect bounds;
     auto function = find_interesting_coeffs(clifford_attractor, bounds);
 
-    auto maxExposure{ 0U };
+    auto maxExposure = 0U;
     auto exposed = expose(w, h, iterations, bounds, function, maxExposure, true);
 
     auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, WhiteOrange);
