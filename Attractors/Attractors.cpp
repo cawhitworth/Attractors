@@ -14,6 +14,9 @@
 #include "lodepng.h"
 #include "Colour.h"
 #include "Gradients.h"
+#include <sstream>
+
+std::default_random_engine re {};
 
 typedef struct {
     decimal a, b, c, d;
@@ -33,6 +36,15 @@ Coord peter_de_jong_attractor(Coord p, Coefficients coeffs)
     Coord out;
     out.x = std::sin(coeffs.a * p.y) - std::cos(coeffs.b * p.x);
     out.y = std::sin(coeffs.c * p.x) - std::cos(coeffs.d * p.y);
+
+    return out;
+}
+
+Coord experiment(Coord p, Coefficients coeffs)
+{
+    Coord out;
+    out.x = coeffs.c * std::sin(coeffs.a * (p.x + p.y)) - coeffs.d * std::cos(coeffs.b * (p.y - p.x));
+    out.y = coeffs.d * std::cos(coeffs.a * (p.x - p.y)) + coeffs.c * std::sin(coeffs.b * (p.y + p.x));
 
     return out;
 }
@@ -76,8 +88,11 @@ Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
 
         p = iterate_function(p);
 
-        auto plotX = static_cast<unsigned int>(fmax(0, floor((p.x - bounds.bl.x) * xScale)));
-        auto plotY = static_cast<unsigned int>(fmax(0, floor((p.y - bounds.bl.y) * yScale)));
+        auto plotX = static_cast<unsigned int>(floor((p.x - bounds.bl.x) * xScale));
+        auto plotY = static_cast<unsigned int>(floor((p.y - bounds.bl.y) * yScale));
+
+        plotX = std::max(0U, std::min(plotX, w-1));
+        plotY = std::max(0U, std::min(plotY, h-1));
 
         auto c = bmp.Point(plotX, plotY) + 1;
 
@@ -111,13 +126,11 @@ Bitmap develop(const Bitmap& bitmap, unsigned maxExposure, decimal gamma, Gradie
     return bmp;
 }
 
+
 std::function<Coord(Coord)> find_interesting_coeffs(std::function<Coord(Coord, Coefficients)> iterate, Rect& bounds)
 {
     using namespace std::placeholders;
     std::uniform_real_distribution<decimal> distribution { -2.0, 2.0 };
-    std::default_random_engine re {};
-
-    re.seed(static_cast<unsigned int>(time(nullptr)));
 
     auto randomCoefficient(bind(distribution, re));
     Coord p {};
@@ -158,20 +171,45 @@ int main()
 {
     using namespace std::placeholders;
 
-    auto w = 640U, h = 512U, iterations = 100U * 1000 * 1000;
+    re.seed(static_cast<unsigned int>(time(nullptr)));
 
-    Rect bounds;
-    auto function = find_interesting_coeffs(clifford_attractor, bounds);
+    auto w = 2560U, h = 1440U;
 
-    auto maxExposure = 0U;
-    auto exposed = expose(w, h, iterations, bounds, function, maxExposure, true);
+    auto img = 0;
 
-    auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, WhiteOrange);
+    auto iters = { 500 * 1000 };
 
-    std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
-    std::cout << "Exposure comp: " << maxExposure << std::endl;
+    std::vector<Gradient> palettes = { Hot, Smoke, BlueSmoke, WhiteOrange, WhiteCyan, WhitePurple, PurpleBlue, PastelPink , PetrolOlive };
+    std::uniform_int_distribution<unsigned> palette_distribution(0, palettes.size()-1);
 
-    auto err = lodepng::encode("output.png", bmp.RawData(), w, h);
+    std::vector< std::function<Coord(Coord, Coefficients)> > functions = { clifford_attractor, peter_de_jong_attractor, experiment };
+    std::uniform_int_distribution<unsigned> function_distribution(0, functions.size()-1);
+
+    while (true) {
+        Rect bounds;
+        auto function = find_interesting_coeffs(functions[function_distribution(re)], bounds);
+
+        std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
+
+        for (auto i : iters)
+        {
+
+            auto maxExposure = 0U;
+            auto exposed = expose(w, h, i * 1000, bounds, function, maxExposure, true);
+
+            auto palette = palettes[palette_distribution(re)];
+            auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, palette);
+
+            std::cout << "Iters " << i << " * 1000, ";
+            std::cout << "Exposure comp: " << maxExposure << std::endl;
+
+            std::stringstream ss;
+            ss << "output_" << img++ << ".png";
+
+            auto err = lodepng::encode(ss.str(), bmp.RawData(), w, h);
+        }
+    }
+
     return 0;
 }
 
