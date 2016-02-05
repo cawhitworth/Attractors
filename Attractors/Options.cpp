@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "Options.h"
 
 StartupOptions get_startup_options(int argc, char** argv)

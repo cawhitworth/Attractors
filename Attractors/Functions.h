@@ -1,6 +1,7 @@
 
 #include <map>
 #include <functional>
+#include <string>
 #include "Geometry.h"
 
 typedef struct {

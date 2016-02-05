@@ -1,4 +1,5 @@
 #include <cmath>
+#include <string>
 #include "Decimal.h"
 #include "Geometry.h"
 #include "Functions.h"
@@ -32,7 +33,7 @@ Coord experiment(Coord p, Coefficients coeffs)
 }
 
 std::map< std::string, std::function<Coord(Coord, Coefficients)> > functions = {
-        { "Clifford", clifford_attractor,},
-        { "DeJong", peter_de_jong_attractor,},
+        { "Clifford", clifford_attractor},
+        { "DeJong", peter_de_jong_attractor},
         { "Experiment", experiment } 
 };
