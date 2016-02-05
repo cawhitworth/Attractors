@@ -148,14 +148,13 @@ int main(int argc, char* argv[])
     auto w = options.width, h = options.height;
     auto iters = options.iterations;
 
-
     std::function< Coord(Coord, Coefficients) > function;
 
     if (functions.find(options.attractor) == functions.end())
     {
         std::uniform_int_distribution<unsigned> function_distribution(0, functions.size()-1);
         auto fn_index = function_distribution(re);
-        std::cout << "Using attractor: " << keys(functions)[fn_index];
+        std::cout << "Using attractor: " << keys(functions)[fn_index] << std::endl;
         function = values(functions)[fn_index];
     }
     else
@@ -173,6 +172,10 @@ int main(int argc, char* argv[])
         std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
 
         exposed = expose(w, h, iters * 1000, bounds, bound_function, maxExposure, true);
+        if (options.exposed_filename != "")
+        {
+            lodepng::encode(options.exposed_filename, exposed.RawData(), w, h);
+        }
     }
     else
     {
