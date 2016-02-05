@@ -20,6 +20,13 @@ Bitmap::Bitmap(unsigned width, unsigned height, unsigned colour)
     }
 }
 
+Bitmap::Bitmap(unsigned width, unsigned height, std::vector<unsigned char> data)
+{
+    m_pixels.resize(width * height);
+    memcpy(&m_pixels[0], &data[0], sizeof(unsigned) * width * height);
+}
+
+
 Bitmap Bitmap::Copy() const
 {
     Bitmap bmp{ m_width, m_height };

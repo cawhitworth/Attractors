@@ -6,7 +6,9 @@
 class Bitmap
 {
 public:
+    Bitmap() : Bitmap(0, 0){}
     Bitmap(unsigned width, unsigned height);
+    Bitmap(unsigned width, unsigned height, std::vector<unsigned char> data);
     Bitmap(unsigned width, unsigned height, unsigned colour);
 
     Bitmap(const Bitmap&) = delete;

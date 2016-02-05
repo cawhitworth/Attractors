@@ -12,42 +12,13 @@
 #include "Geometry.h"
 #include "Bitmap.h"
 #include "lodepng.h"
-#include "Colour.h"
-#include "Gradients.h"
-#include <sstream>
+#include "Palettes.h"
+#include <map>
+#include "Utils.h"
+#include "Options.h"
+#include "Functions.h"
 
 std::default_random_engine re {};
-
-typedef struct {
-    decimal a, b, c, d;
-} Coefficients;
-
-Coord clifford_attractor(Coord p, Coefficients coeffs)
-{
-    Coord out;
-    out.x = std::sin(coeffs.a * p.y) + coeffs.c * std::cos(coeffs.a * p.x);
-    out.y = std::sin(coeffs.b * p.x) + coeffs.d * std::cos(coeffs.b * p.y);
-
-    return out;
-}
-
-Coord peter_de_jong_attractor(Coord p, Coefficients coeffs)
-{
-    Coord out;
-    out.x = std::sin(coeffs.a * p.y) - std::cos(coeffs.b * p.x);
-    out.y = std::sin(coeffs.c * p.x) - std::cos(coeffs.d * p.y);
-
-    return out;
-}
-
-Coord experiment(Coord p, Coefficients coeffs)
-{
-    Coord out;
-    out.x = coeffs.c * std::sin(coeffs.a * (p.x + p.y)) - coeffs.d * std::cos(coeffs.b * (p.y - p.x));
-    out.y = coeffs.d * std::cos(coeffs.a * (p.x - p.y)) + coeffs.c * std::sin(coeffs.b * (p.y + p.x));
-
-    return out;
-}
 
 Rect find_bounds(std::function<Coord(Coord)> iter, unsigned iterations = 10000)
 {
@@ -167,47 +138,77 @@ std::function<Coord(Coord)> find_interesting_coeffs(std::function<Coord(Coord, C
     return fn;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    auto options = get_startup_options(argc, argv);
     using namespace std::placeholders;
 
     re.seed(static_cast<unsigned int>(time(nullptr)));
 
-    auto w = 2560U, h = 1440U;
+    auto w = options.width, h = options.height;
+    auto iters = options.iterations;
 
-    auto img = 0;
 
-    auto iters = { 500 * 1000 };
+    std::function< Coord(Coord, Coefficients) > function;
 
-    std::vector<Gradient> palettes = { Hot, Smoke, BlueSmoke, WhiteOrange, WhiteCyan, WhitePurple, PurpleBlue, PastelPink , PetrolOlive };
-    std::uniform_int_distribution<unsigned> palette_distribution(0, palettes.size()-1);
+    if (functions.find(options.attractor) == functions.end())
+    {
+        std::uniform_int_distribution<unsigned> function_distribution(0, functions.size()-1);
+        auto fn_index = function_distribution(re);
+        std::cout << "Using attractor: " << keys(functions)[fn_index];
+        function = values(functions)[fn_index];
+    }
+    else
+    {
+        function = functions[options.attractor];
+    }
 
-    std::vector< std::function<Coord(Coord, Coefficients)> > functions = { clifford_attractor, peter_de_jong_attractor, experiment };
-    std::uniform_int_distribution<unsigned> function_distribution(0, functions.size()-1);
+    Bitmap exposed;
+    auto maxExposure = 0U;
 
-    while (true) {
+    if (options.expose) {
         Rect bounds;
-        auto function = find_interesting_coeffs(functions[function_distribution(re)], bounds);
+        auto bound_function = find_interesting_coeffs(function, bounds);
 
         std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
 
-        for (auto i : iters)
+        exposed = expose(w, h, iters * 1000, bounds, bound_function, maxExposure, true);
+    }
+    else
+    {
+        std::vector<unsigned char> data;
+        auto err = lodepng::decode(data, w, h, options.exposed_filename);
+        exposed = Bitmap(w, h, data);
+        for(const auto p : exposed)
         {
-
-            auto maxExposure = 0U;
-            auto exposed = expose(w, h, i * 1000, bounds, function, maxExposure, true);
-
-            auto palette = palettes[palette_distribution(re)];
-            auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * 0.8), 1.5, palette);
-
-            std::cout << "Iters " << i << " * 1000, ";
-            std::cout << "Exposure comp: " << maxExposure << std::endl;
-
-            std::stringstream ss;
-            ss << "output_" << img++ << ".png";
-
-            auto err = lodepng::encode(ss.str(), bmp.RawData(), w, h);
+            if (p > maxExposure) { maxExposure = p; }
         }
+    }
+
+    if (options.develop) {
+
+        Gradient palette;
+        if (options.palette != "")
+        {
+            for (auto p : Palettes)
+            {
+                if (p.name == options.palette)
+                {
+                    palette = p;
+                }
+            }
+        }
+        else
+        {
+            std::uniform_int_distribution<unsigned> palette_distribution(0, Palettes.size()-1);
+            palette = Palettes[palette_distribution(re)];
+        }
+
+        std::cout << "Developing with palette " << palette.name << ", exposure = " << options.exposure << ", gamma = " << options.gamma << std::endl;
+
+        auto bmp = develop(exposed, static_cast<unsigned>(maxExposure * options.exposure), options.gamma, palette);
+
+        auto err = lodepng::encode(options.output_filename, bmp.RawData(), w, h);
     }
 
     return 0;
