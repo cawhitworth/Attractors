@@ -55,7 +55,7 @@ Bitmap expose(unsigned w, unsigned h, unsigned iterations, Rect bounds, std::fun
 
     for (auto i = 0U; i < iterations ; i++)
     {
-        if (log) { if (i % reset == 0) std::cout << "."; }
+        if (log) { if (i % reset == 0) std::cout << "." << std::flush; }
 
         p = iterate_function(p);
 
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 
         std::cout << "Bounds (" << bounds.bl.x << "," << bounds.bl.y << ") (" << bounds.tr.x << "," << bounds.tr.y << ")" << std::endl;
 
-        exposed = expose(w, h, iters * 1000, bounds, bound_function, maxExposure, true);
+        exposed = expose(w, h, iters, bounds, bound_function, maxExposure, true);
         if (options.exposed_filename != "")
         {
             lodepng::encode(options.exposed_filename, exposed.RawData(), w, h);
