@@ -22,6 +22,7 @@ Bitmap::Bitmap(unsigned width, unsigned height, unsigned colour)
 
 Bitmap::Bitmap(unsigned width, unsigned height, std::vector<unsigned char> data)
 {
+    m_width = width; m_height = height;
     m_pixels.resize(width * height);
     memcpy(&m_pixels[0], &data[0], sizeof(unsigned) * width * height);
 }

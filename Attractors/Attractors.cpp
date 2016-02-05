@@ -146,7 +146,9 @@ int main(int argc, char* argv[])
     re.seed(static_cast<unsigned int>(time(nullptr)));
 
     auto w = options.width, h = options.height;
-    auto iters = options.iterations;
+    auto iters = options.iterations * 1000;
+
+    std::cout << "Image (" << w << ", " << h << "), " << iters << " iterations" << std::endl;
 
     std::function< Coord(Coord, Coefficients) > function;
 
