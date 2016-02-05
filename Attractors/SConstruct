@@ -8,5 +8,8 @@ env.Append(LINKFLAGS= [ ])
 env.Program("attractors", [
                        "Attractors.cpp",
                        "Bitmap.cpp",
-                       "lodepng.cpp"
+                       "Functions.cpp",
+                       "lodepng.cpp",
+                       "Options.cpp",
+                       "Palettes.cpp"
                         ] )
