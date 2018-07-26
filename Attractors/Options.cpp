@@ -23,8 +23,8 @@ StartupOptions get_startup_options(int argc, char** argv)
         if (a == "--develop" || a == "-d") { s.develop = true; }
         if (a == "--no-develop" || a == "-D") { s.develop = false; }
 
-        if (a == "--palette" || a == "-p") { s.palette = argv[++arg]; }
-        if (a == "--attractor" || a == "-a") { s.attractor = argv[++arg]; }
+        if (a == "--palette" || a == "-p") { s.palette = argv[++arg]; s.random_everything = false; }
+        if (a == "--attractor" || a == "-a") { s.attractor = argv[++arg]; s.random_everything = false; }
 
         if (a == "--output" || a == "-o") { s.output_filename = argv[++arg]; }
         if (a == "--expose-file") { s.exposed_filename = argv[++arg]; }
