@@ -11,4 +11,4 @@ output.png
 *.dblite
 tags
 .DS_Store
-attractors
+build/
