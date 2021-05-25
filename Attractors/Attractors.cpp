@@ -37,6 +37,12 @@ Rect find_bounds(std::function<Coord(Coord)> iter,
         bounds.tr.y = std::max(p.y, bounds.tr.y);
     }
 
+    bounds.bl.x *= 1.05;
+    bounds.bl.y *= 1.05;
+
+    bounds.tr.x *= 1.05;
+    bounds.tr.y *= 1.05;
+
     return bounds;
 }
 

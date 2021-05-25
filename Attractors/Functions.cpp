@@ -32,8 +32,22 @@ Coord experiment(Coord p, Coefficients coeffs)
     return out;
 }
 
+Coord experiment2(Coord p, Coefficients coeffs)
+{
+    Coord out;
+    decimal ab = coeffs.a + coeffs.b;
+    decimal ba = coeffs.b - coeffs.a;
+    decimal cd = coeffs.c + coeffs.d;
+    decimal dc = coeffs.d - coeffs.c;
+    out.x = coeffs.c * std::sin(ab * p.y) + coeffs.d * std::cos(ba * p.x);
+    out.y = coeffs.a * std::sin(cd * p.x) - coeffs.b * std::cos(dc * p.y);
+
+    return out;
+}
+
 std::map< std::string, std::function<Coord(Coord, Coefficients)> > functions = {
         { "Clifford", clifford_attractor},
         { "DeJong", peter_de_jong_attractor},
-        { "Experiment", experiment } 
+        { "Experiment", experiment },
+        { "Experiment2", experiment2 }
 };
